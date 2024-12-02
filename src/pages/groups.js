@@ -11,7 +11,6 @@ import { useState} from "react";
 import GroupDetailsDrawer from "@/pages/groups/details-drawer/index.jsx";
 import GroupEditDrawer from "@/pages/groups/edit-drawer/index.jsx";
 
-
 const Groups = () => {
     const { toggleModal, open } = useAppContext();
     const [selectedGroup, setSelectedGroup] = useState(null);
@@ -25,7 +24,6 @@ const Groups = () => {
         queryKey: ["tasksByGroup", selectedGroup?.id],
         queryFn: () => getTasksByGroup(selectedGroup?.id),
         enabled: !!selectedGroup,
-
     });
 
     const {data: groupMembers} = useQuery({
@@ -130,7 +128,6 @@ const Groups = () => {
                         users={users?.data}
                         onClose={onchildrenEditDrawerClose}
                         groupMembers={groupMembers?.data}
-
                     />
                 </Drawer>
             </Drawer>

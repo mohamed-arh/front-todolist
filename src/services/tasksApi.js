@@ -17,10 +17,28 @@ export const getTasks = async () => {
 }
 
 export const getArchivedTasks = async () => {
-    //await checkAccessToken();
+    await checkAccessToken();
 
     return request({
         url: API_BASE_URL + `/api/tasks/archived`,
+        method: 'GET',
+    });
+}
+
+export const getCollaborativeTasks = async () => {
+    await checkAccessToken();
+
+    return request({
+        url: API_BASE_URL + `/api/tasks/collaborative`,
+        method: 'GET',
+    });
+}
+
+export const getPersonalTasks = async () => {
+    await checkAccessToken();
+
+    return request({
+        url: API_BASE_URL + `/api/tasks/personal`,
         method: 'GET',
     });
 }
@@ -62,7 +80,6 @@ export const updateStatusTask = async (updatedData) => {
         data: { statusId: updatedData.statusId }
     });
 }
-
 
 export const deleteTask = async (id) => {
     //await checkAccessToken();

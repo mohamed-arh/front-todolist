@@ -1,12 +1,12 @@
 import React from 'react';
 import ComponentHeader from "@/components/HeaderContent.jsx";
-import {Button, Divider, Card, Col, Row, Tag, Drawer} from "antd";
+import {Button, Divider, Card, Col, Row, Tag, Drawer, Select} from "antd";
 import {HourglassOutlined, PlusCircleOutlined, WarningOutlined} from "@ant-design/icons";
 import { useAppContext } from "@/AppContext.js";
 import { useState } from "react";
 import {lighten} from "polished";
 import {useQuery} from "@tanstack/react-query";
-import {getTasks} from "@/services/tasksApi.js";
+import {getCollaborativeTasks, getPersonalTasks, getTasks} from "@/services/tasksApi.js";
 import TaskCreateModal from "@/pages/tasks/create-modal/index.jsx";
 import TaskDetailsDrawer from "@/pages/tasks/details-drawer/index.jsx";
 import TaskEditDrawer from "@/pages/tasks/edit-drawer/index.jsx";
@@ -59,17 +59,38 @@ const getStatusColor = (status) => {
 const Tasks = () => {
     const { toggleModal, open } = useAppContext();
     const [selectedTask, setSelectedTask] = useState(null);
+    const [filter, setFilter] = useState('all');
 
     const {data: tasks} = useQuery({
         queryKey: ["tasks"],
         queryFn: () => getTasks(),
     });
+    const {data: personalTasks} = useQuery({
+        queryKey: ["personalTasks"],
+        queryFn: () => getPersonalTasks(),
+    });
+    const {data: collaborativeTasks} = useQuery({
+        queryKey: ["collaborativeTasks"],
+        queryFn: () => getCollaborativeTasks(),
+    });
+
     const {data: groups} = useQuery({
         queryKey: ["groups" ],
         queryFn: () => getGroups(),
     });
-
-
+    const handleFilterChange = (value) => {
+        setFilter(value);
+    };
+    const filteredTasks = () => {
+        switch (filter) {
+            case 'personal':
+                return personalTasks?.data || [];
+            case 'collaborative':
+                return collaborativeTasks?.data || [];
+            default:
+                return tasks?.data || [];
+        }
+    };
 
     function handleCreate() {
         toggleModal('createModal');
@@ -92,10 +113,17 @@ const Tasks = () => {
     return (
         <div className="">
             <div className="flex justify-between">
-                <ComponentHeader title={"Mes Taches"} className="w-[80%]" />
-                <Button icon={<PlusCircleOutlined />} onClick={handleCreate} className="flex items-center ">
-                    <label className="cursor-pointer">Créer une tache</label>
-                </Button>
+                <ComponentHeader title={"Mes Taches"} className="w-[80%]"/>
+                <div className="flex items-center">
+                    <Select defaultValue="all"  onChange={handleFilterChange}>
+                        <Select.Option value="all">All</Select.Option>
+                        <Select.Option value="personal">Personal</Select.Option>
+                        <Select.Option value="collaborative">Collaborative</Select.Option>
+                    </Select>
+                    <Button icon={<PlusCircleOutlined/>} onClick={handleCreate} className="flex items-center ml-2">
+                        <label className="cursor-pointer">Créer une tache</label>
+                    </Button>
+                </div>
             </div>
             <Divider className="mt-0"></Divider>
             <div>
@@ -103,10 +131,10 @@ const Tasks = () => {
                     {statuses.map((status) => (
                         <Col span={6} key={status.id}>
                             <Card title={status.name} bordered={true} size="small"
-                                  styles={{ header: { backgroundColor: lighten(0.1, getStatusColor(status.name)) } }}
-                                  style={{ backgroundColor: lighten(0.4, getStatusColor(status.name)) }}
+                                  styles={{header: {backgroundColor: lighten(0.1, getStatusColor(status.name))}}}
+                                  style={{backgroundColor: lighten(0.4, getStatusColor(status.name))}}
                             >
-                                {tasks?.data.filter(task => task.status.id === status.id).map(task => (
+                                {filteredTasks().filter(task => task.status.id === status.id).map(task => (
                                     <Card
                                         key={task.id} bordered={true}
                                         className="cursor-pointer mb-2"
